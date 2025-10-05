@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 
+import numpy as np
+from PIL import Image, ImageOps
 import tensorflow as tf
 
 
@@ -29,6 +31,14 @@ def get_or_create_mnist_model(x_train, y_train):
         return model
 
 
+def get_image_as_tensor(path_to_image: str) -> np.ndarray:
+    input_arr = tf.keras.utils.load_img(
+        path_to_image, color_mode="grayscale", target_size=(28, 28)
+    )
+    input_arr = np.array([input_arr])
+    return input_arr
+
+
 def main(path_to_image: str):
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -36,7 +46,14 @@ def main(path_to_image: str):
 
     model = get_or_create_mnist_model(x_train, y_train)
 
-    model.evaluate(x_test, y_test)
+    x = get_image_as_tensor(path_to_image)
+    probs = model.predict(x, verbose=0)[0]
+    print(
+        "Twoja liczba to:",
+        np.argmax(probs),
+        "z prawdopodobieństwem:",
+        probs[np.argmax(probs)],
+    )
 
 
 if __name__ == "__main__":
