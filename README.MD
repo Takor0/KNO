@@ -1,2 +1,2 @@
 ## Repository for *Knowledge Representation* study course
-### Autor: Tomasz Wakor
+### Author: Tomasz Wakor
