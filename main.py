@@ -45,6 +45,7 @@ def get_image_as_tensor(path_to_image: str) -> np.ndarray:
         path_to_image, color_mode="grayscale", target_size=(28, 28)
     )
     input_arr = np.array([input_arr])
+    input_arr = input_arr / 255.0
     return input_arr
 
 
@@ -57,6 +58,7 @@ def main(path_to_image: str):
 
     x = get_image_as_tensor(path_to_image)
     probs = model.predict(x, verbose=0)[0]
+    print(probs)
     print(
         "Twoja liczba to:",
         np.argmax(probs),
