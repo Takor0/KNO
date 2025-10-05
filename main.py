@@ -2,8 +2,18 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageOps
 import tensorflow as tf
+import matplotlib.pyplot as plt
+
+
+def plot_loss(history):
+    plt.plot(history.history["loss"], label="loss")
+    plt.ylim([0, 1])
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("fir_curve.png")
 
 
 def get_or_create_mnist_model(x_train, y_train):
@@ -24,9 +34,8 @@ def get_or_create_mnist_model(x_train, y_train):
             loss="sparse_categorical_crossentropy",
             metrics=["accuracy"],
         )
-        model.fit(
-            x_train, y_train, epochs=5
-        )  # użyj verbose=0 jeśli jest problem z konsolą
+        history = model.fit(x_train, y_train, epochs=5)
+        plot_loss(history)
         model.save(model_path)
         return model
 
