@@ -172,5 +172,7 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+*.png
+*.keras
 
 # End of https://www.toptal.com/developers/gitignore/api/python
