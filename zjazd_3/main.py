@@ -7,6 +7,7 @@ import tensorflow as tf
 from keras import Sequential
 
 from keras.src import layers
+from keras.src.optimizers import Adam
 
 from sklearn.model_selection import train_test_split
 import sklearn
@@ -51,12 +52,12 @@ def first_model(X_train, y_train, recalculate=False):
             ]
         )
         model.compile(
-            optimizer="adam",
+            optimizer=Adam(learning_rate=0.001),
             loss="categorical_crossentropy",
             metrics=["accuracy"],
         )
 
-        history = model.fit(X_train, y_train, epochs=10)
+        history = model.fit(X_train, y_train, epochs=10, batch_size=32)
         plot_loss(history)
         model.save(model_path)
     else:
@@ -71,18 +72,23 @@ def second_model(X_train, y_train, recalculate=False):
         model = Sequential(
             [
                 layers.Input(shape=(13,), name="input"),
-                layers.Dense(64, activation="relu", name="hidden_1",kernel_initializer='HeNormal',),
+                layers.Dense(
+                    64,
+                    activation="relu",
+                    name="hidden_1",
+                    kernel_initializer="HeNormal",
+                ),
                 layers.Dropout(0.2, name="hidden_3"),
-                layers.Dense(3, activation='softmax', name='output')
+                layers.Dense(3, activation="softmax", name="output"),
             ]
         )
         model.compile(
-            optimizer="adam",
+            optimizer=Adam(learning_rate=0.001),
             loss="categorical_crossentropy",
             metrics=["accuracy"],
         )
 
-        history = model.fit(X_train, y_train, epochs=10)
+        history = model.fit(X_train, y_train, epochs=10, batch_size=32)
         plot_loss(history)
         model.save(model_path)
     else:
@@ -106,15 +112,23 @@ def get_model(name, X_train, y_train, recalculate=False):
 def main(arguments):
     X_train, X_test, y_train, y_test = get_data()
     model = get_model(
-        name="second", X_train=X_train, y_train=y_train, recalculate=True
+        name="second", X_train=X_train, y_train=y_train, recalculate=False
     )
 
     x = np.array([list(arguments.__dict__.values())])
-
+    correct_count = 0
     for x_test, (_, y) in zip(X_test, y_test.iterrows()):
         test_in = np.array([x_test])
         probs = model.predict(test_in, verbose=0)[0]
-        print(probs, list(y))
+        pred_label = np.argmax(probs) + 1
+        actual_label = np.argmax(list(y)) + 1
+        correct = pred_label == actual_label
+        correct_count += 1 if correct else 0
+
+        print(
+            f"probs: {probs}, predicted: {pred_label}, actual class: {actual_label}, correct: {pred_label == actual_label}"
+        )
+    print(f"Accuracy: {correct_count / len(X_test) * 100:.2f} %")
 
 
 if __name__ == "__main__":
