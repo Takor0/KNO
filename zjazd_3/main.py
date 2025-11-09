@@ -86,12 +86,36 @@ def second_model(learning_rate):
         [
             layers.Input(shape=(13,), name="input"),
             layers.Dense(
-                64,
+                256,
                 activation="relu",
                 name="hidden_1",
                 kernel_initializer="HeNormal",
             ),
-            layers.Dropout(0.2, name="hidden_3"),
+            layers.Dense(
+                128,
+                activation="relu",
+                name="hidden_2",
+                kernel_initializer="HeNormal",
+            ),
+            layers.Dense(
+                64,
+                activation="relu",
+                name="hidden_3",
+                kernel_initializer="HeNormal",
+            ),
+            layers.Dense(
+                32,
+                activation="relu",
+                name="hidden_4",
+                kernel_initializer="HeNormal",
+            ),
+            layers.Dense(
+                16,
+                activation="relu",
+                name="hidden_5",
+                kernel_initializer="HeNormal",
+            ),
+            layers.Dropout(0.2, name="hidden_6"),
             layers.Dense(3, activation="softmax", name="output"),
         ]
     )
@@ -147,7 +171,7 @@ def get_model(
 def main(arguments):
     X_train, X_test, y_train, y_test = get_data()
     model = get_model(
-        name="first",
+        name="second",
         X_train=X_train,
         y_train=y_train,
         recalculate=True,
