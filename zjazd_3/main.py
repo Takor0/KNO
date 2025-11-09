@@ -20,31 +20,33 @@ def plot_loss(
 ):
     import matplotlib.pyplot as plt
 
-    savepath = f"{name}_curve.png"
+    for key, label in [
+        ("accuracy", "Accuracy"),
+        ("loss", "Loss"),
+    ]:
+        savepath = f"{name}_{key}_curve.png"
 
-    fig, ax = plt.subplots(constrained_layout=True)
+        fig, ax = plt.subplots(constrained_layout=True)
 
-    ax.plot(history.history["loss"], label="loss")
-    if "val_loss" in history.history:
-        ax.plot(history.history["val_loss"], label="val_loss")
+        ax.plot(history[key], label=label)
 
-    ax.set_ylim(0, 2)
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.legend()
-    ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.5)
+        ax.set_ylim(0, 2)
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel(label)
+        ax.legend()
+        ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.5)
 
-    text = f"batch_size={batch_size}\nlr={learning_rate}\nepochs={epochs}"
-    at = AnchoredText(
-        text, loc=loc, pad=0.3, borderpad=0.4, prop={"family": "monospace"}
-    )
-    at.patch.set_facecolor("white")
-    at.patch.set_alpha(0.85)
-    at.patch.set_edgecolor("gray")
-    ax.add_artist(at)
+        text = f"batch_size={batch_size}\nlr={learning_rate}\nepochs={epochs}"
+        at = AnchoredText(
+            text, loc=loc, pad=0.3, borderpad=0.4, prop={"family": "monospace"}
+        )
+        at.patch.set_facecolor("white")
+        at.patch.set_alpha(0.85)
+        at.patch.set_edgecolor("gray")
+        ax.add_artist(at)
 
-    fig.savefig(savepath, dpi=150)
-    plt.close(fig)
+        fig.savefig(savepath, dpi=150)
+        plt.close(fig)
 
 
 def get_data():
@@ -56,12 +58,10 @@ def get_data():
     X_train, X_test, y_train, y_test = train_test_split(
         df, class_hot_one, test_size=0.2, random_state=42
     )
-
-    scaler = sklearn.preprocessing.StandardScaler()
-    X_train = scaler.fit_transform(X_train)
+    scaler, X_train = get_scaler(X_train)
     X_test = scaler.transform(X_test)
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, scaler
 
 
 def first_model(learning_rate):
@@ -128,6 +128,12 @@ def second_model(learning_rate):
     return model
 
 
+def get_scaler(X_train):
+    scaler = sklearn.preprocessing.StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    return scaler, X_train
+
+
 def get_model(
     name,
     X_train,
@@ -151,11 +157,12 @@ def get_model(
         else:
             raise ValueError(f"Unknown model name: {name}")
 
-        history = model.fit(
+        fit_result = model.fit(
             X_train, y_train, epochs=epochs, batch_size=batch_size
         )
+
         plot_loss(
-            history,
+            fit_result.history,
             batch_size=batch_size,
             epochs=epochs,
             learning_rate=learning_rate,
@@ -169,7 +176,7 @@ def get_model(
 
 
 def main(arguments):
-    X_train, X_test, y_train, y_test = get_data()
+    X_train, X_test, y_train, y_test, scaler = get_data()
     model = get_model(
         name="second",
         X_train=X_train,
@@ -181,6 +188,11 @@ def main(arguments):
     )
 
     x = np.array([list(arguments.__dict__.values())])
+    x = scaler.transform(x)
+    probs = model.predict(x, verbose=0)[0]
+    print("predicted class: ", np.argmax(probs) + 1)
+
+    # exit()
     correct_count = 0
     for x_test, (_, y) in zip(X_test, y_test.iterrows()):
         test_in = np.array([x_test])
