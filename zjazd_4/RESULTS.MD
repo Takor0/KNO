@@ -18,9 +18,22 @@
 - Validation Loss ~24%
 - Metryka tunera: 'val_accuracy'
 - Macierz pomyłek
+- Metoda tunera Hyperband
 - [12 0 0]
 - [0 16 0]
 - [0 0 8]
+
+### Model z maszyny zdalnej
+Trial 0019 summary
+Hyperparameters:
+units: 193
+dropout: 0.13
+learning_rate: 0.1
+tuner/epochs: 4
+tuner/initial_epoch: 0
+tuner/bracket: 1
+tuner/round: 0
+Score: 1.0
 
 #### Summary
 Model: "sequential"
