@@ -14,7 +14,7 @@ from matplotlib.offsetbox import AnchoredText
 
 
 def plot_loss(
-        history, batch_size, epochs, learning_rate, name, loc="upper right"
+        history, batch_size, epochs, learning_rate, loc="upper right"
 ):
     import matplotlib.pyplot as plt
 
@@ -22,7 +22,7 @@ def plot_loss(
         ("accuracy", "Accuracy"),
         ("loss", "Loss"),
     ]:
-        savepath = f"{name}_{key}_curve.png"
+        savepath = f"{key}_curve.png"
 
         fig, ax = plt.subplots(constrained_layout=True)
 
@@ -64,30 +64,6 @@ def second_model(norm_layer):
         [
             norm_layer,
             layers.Dense(
-                256,
-                activation="relu",
-                name="hidden_1",
-                kernel_initializer="HeNormal",
-            ),
-            layers.Dense(
-                128,
-                activation="relu",
-                name="hidden_2",
-                kernel_initializer="HeNormal",
-            ),
-            layers.Dense(
-                64,
-                activation="relu",
-                name="hidden_3",
-                kernel_initializer="HeNormal",
-            ),
-            layers.Dense(
-                32,
-                activation="relu",
-                name="hidden_4",
-                kernel_initializer="HeNormal",
-            ),
-            layers.Dense(
                 16,
                 activation="relu",
                 name="hidden_5",
@@ -102,7 +78,6 @@ def second_model(norm_layer):
 
 
 def get_model(
-        name,
         X_train,
         y_train,
         recalculate=True,
@@ -112,15 +87,11 @@ def get_model(
         norm_layer=None
 
 ):
-    model_path = Path(f"./{name}_model.keras")
+    model_path = Path(f"OLD/model.keras")
     if not model_path.exists() or recalculate:
-        if name == "second":
-            model = second_model(
-                norm_layer
-            )
-
-        else:
-            raise ValueError(f"Unknown model name: {name}")
+        model = second_model(
+            norm_layer
+        )
 
         model.compile(
             optimizer=Adam(learning_rate=learning_rate),
@@ -136,7 +107,6 @@ def get_model(
             batch_size=batch_size,
             epochs=epochs,
             learning_rate=learning_rate,
-            name=name,
         )
         model.save(model_path)
     else:
@@ -154,14 +124,12 @@ def main(arguments):
 
 
 
-
     model = get_model(
-        name="second",
         X_train=X_train,
         y_train=y_train,
         recalculate=True,
         batch_size=32,
-        epochs=10,
+        epochs=30,
         learning_rate=0.001,
         norm_layer=norm_layer
     )
