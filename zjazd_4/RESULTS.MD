@@ -15,10 +15,10 @@
 
 #### Summary
 Model: "sequential"
-|Layer (type)|                 |Output Shape           |       Param # |
+
+|Layer (type)|  Output Shape           |       Param # |
 |---------------------------------|------------------------|---------------|
 |normalization (Normalization)    |(None, 13)             |            27
 |hidden_dense (Dense)             |(None, 65)             |           910 |
 |hidden_dropout (Dropout)         |(None, 65)             |
 | Output (Dense)                   |(None, 3)              |           198 |
-
