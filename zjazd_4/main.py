@@ -10,8 +10,6 @@ from keras.src import layers
 from keras.src.optimizers import Adam
 
 from sklearn.model_selection import train_test_split
-import sklearn
-import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 
 
@@ -58,28 +56,13 @@ def get_data():
     X_train, X_test, y_train, y_test = train_test_split(
         df, class_hot_one, test_size=0.2, random_state=42
     )
-    scaler, X_train = get_scaler(X_train)
-    X_test = scaler.transform(X_test)
-
-    return X_train, X_test, y_train, y_test, scaler
+    return X_train, X_test, y_train, y_test
 
 
-def first_model():
+def second_model(norm_layer):
     model = Sequential(
         [
-            layers.Input(shape=(13,), name="input"),
-            layers.Dense(32, activation="relu", name="hidden_1"),
-            layers.Dense(3, activation="softmax", name="output"),
-        ]
-    )
-
-    return model
-
-
-def second_model():
-    model = Sequential(
-        [
-            layers.Input(shape=(13,), name="input"),
+            norm_layer,
             layers.Dense(
                 256,
                 activation="relu",
@@ -118,12 +101,6 @@ def second_model():
     return model
 
 
-def get_scaler(X_train):
-    scaler = sklearn.preprocessing.StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    return scaler, X_train
-
-
 def get_model(
         name,
         X_train,
@@ -132,13 +109,15 @@ def get_model(
         batch_size=32,
         epochs=10,
         learning_rate=0.001,
+        norm_layer=None
+
 ):
     model_path = Path(f"./{name}_model.keras")
     if not model_path.exists() or recalculate:
-        if name == "first":
-            model = first_model()
-        elif name == "second":
-            model = second_model()
+        if name == "second":
+            model = second_model(
+                norm_layer
+            )
 
         else:
             raise ValueError(f"Unknown model name: {name}")
@@ -148,7 +127,6 @@ def get_model(
             loss="categorical_crossentropy",
             metrics=["accuracy"],
         )
-
         fit_result = model.fit(
             X_train, y_train, epochs=epochs, batch_size=batch_size
         )
@@ -168,7 +146,15 @@ def get_model(
 
 
 def main(arguments):
-    X_train, X_test, y_train, y_test, scaler = get_data()
+    X_train, X_test, y_train, y_test = get_data()
+
+    adapt_data = np.array(X_train)
+    norm_layer = layers.Normalization()
+    norm_layer.adapt(adapt_data)
+
+
+
+
     model = get_model(
         name="second",
         X_train=X_train,
@@ -177,17 +163,20 @@ def main(arguments):
         batch_size=32,
         epochs=10,
         learning_rate=0.001,
+        norm_layer=norm_layer
     )
 
     x = np.array([list(arguments.__dict__.values())])
-    x = scaler.transform(x)
     probs = model.predict(x, verbose=0)[0]
     print("predicted class: ", np.argmax(probs) + 1)
 
     # exit()
     correct_count = 0
-    for x_test, (_, y) in zip(X_test, y_test.iterrows()):
-        test_in = np.array([x_test])
+
+    for x_test, (_, y) in zip(X_test.itertuples(), y_test.iterrows()):
+        x_test_list = list(x_test)
+        x_test_list.pop(0)
+        test_in = np.array([list(x_test_list)])
         probs = model.predict(test_in, verbose=0)[0]
         pred_label = np.argmax(probs) + 1
         actual_label = np.argmax(list(y)) + 1
