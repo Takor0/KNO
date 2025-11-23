@@ -9,9 +9,9 @@
 
 ### Model z tunera (najlepszy model)
 - warstwa normalizacyjna
-- Dense 65 unitów, activation relu
-- Dropout rate 0.06
-- learning_rate: 0.1
+- Dense 65 unitów, activation relu, TESTOWANE
+- Dropout rate 0.06, TESTOWANE
+- learning_rate: 0.1, TESTOWANE 
 
 #### Summary
 Model: "sequential"
