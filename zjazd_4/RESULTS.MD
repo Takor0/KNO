@@ -20,5 +20,5 @@ Model: "sequential"
 |---------------------------------|------------------------|---------------|
 |normalization (Normalization)    |(None, 13)             |            27
 |hidden_dense (Dense)             |(None, 65)             |           910 |
-|hidden_dropout (Dropout)         |(None, 65)             |
+|hidden_dropout (Dropout)         |(None, 65)             | 0 |
 | Output (Dense)                   |(None, 3)              |           198 |
