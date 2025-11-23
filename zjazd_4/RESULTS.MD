@@ -12,6 +12,15 @@
 - Dense 65 unitów, activation relu, TESTOWANE
 - Dropout rate 0.06, TESTOWANE
 - learning_rate: 0.1, TESTOWANE 
+- Accuracy 100%
+- Loss < 1% (3.2703e-08)
+- Validation Accuracy ~96%
+- Validation Loss ~24%
+- Metryka tunera: 'val_accuracy'
+- Macierz pomyłek
+- [12 0 0]
+- [0 16 0]
+- [0 0 8]
 
 #### Summary
 Model: "sequential"

@@ -1,21 +1,25 @@
 from pathlib import Path
 
+import keras_tuner as kt
 import numpy as np
 import pandas as pd
 import argparse
 import tensorflow as tf
 from keras import Sequential
+from keras.callbacks import EarlyStopping
 
 from keras.src import layers
 from keras.src.optimizers import Adam
+from sklearn.metrics import confusion_matrix
 
 from sklearn.model_selection import train_test_split
 from matplotlib.offsetbox import AnchoredText
 
 
-def plot_loss(
-        history, batch_size, epochs, learning_rate, loc="upper right"
-):
+normalization_layer = None
+
+
+def plot_loss(history, batch_size, epochs, learning_rate, loc="upper right"):
     import matplotlib.pyplot as plt
 
     for key, label in [
@@ -59,47 +63,73 @@ def get_data():
     return X_train, X_test, y_train, y_test
 
 
-def second_model(norm_layer):
-    model = Sequential(
-        [
-            norm_layer,
-            layers.Dense(
-                16,
-                activation="relu",
-                name="hidden_5",
-                kernel_initializer="HeNormal",
-            ),
-            layers.Dropout(0.2, name="hidden_6"),
-            layers.Dense(3, activation="softmax", name="output"),
-        ]
+def model_builder(hp):
+    model = Sequential()
+    model.add(normalization_layer)
+
+    hp_units = hp.Int("units", min_value=1, max_value=512, step=32)
+    model.add(layers.Dense(units=hp_units, activation="relu", name="hidden_dense"))
+
+    hp_rates = hp.Float("dropout", min_value=0, max_value=0.4, step=0.01)
+    model.add(layers.Dropout(hp_rates, name="hidden_dropout"))
+
+    model.add(
+        layers.Dense(3, activation="softmax", name="output"),
+    )
+
+    hp_learning_rate = hp.Choice(
+        "learning_rate", values=[1e-1, 1e-2, 1e-3, 1e-4]
+    )
+
+    model.compile(
+        optimizer=Adam(learning_rate=hp_learning_rate),
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
     )
 
     return model
 
 
 def get_model(
-        X_train,
-        y_train,
-        recalculate=True,
-        batch_size=32,
-        epochs=10,
-        learning_rate=0.001,
-        norm_layer=None
-
+    X_train,
+    y_train,
+    recalculate=True,
+    batch_size=32,
+    epochs=10,
+    learning_rate=0.001,
 ):
-    model_path = Path(f"OLD/model.keras")
+    model_path = Path(f"model.keras")
     if not model_path.exists() or recalculate:
-        model = second_model(
-            norm_layer
+        tuner = kt.Hyperband(
+            model_builder,
+            objective="val_accuracy",
+            max_epochs=epochs,
+            factor=3,
+            directory="tuner_results",
+            project_name="wines",
         )
 
-        model.compile(
-            optimizer=Adam(learning_rate=learning_rate),
-            loss="categorical_crossentropy",
-            metrics=["accuracy"],
+        early_stopping_callback = EarlyStopping(
+            monitor='val_accuracy',
+            mode='max',
+            baseline=1.0,
+            patience=0,
+            verbose=1
         )
+
+        tuner.search(
+            X_train,
+            y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_split=0.2,
+            callbacks=[early_stopping_callback]
+        )
+        tuner.results_summary()
+        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+        model = tuner.hypermodel.build(best_hps)
         fit_result = model.fit(
-            X_train, y_train, epochs=epochs, batch_size=batch_size
+            X_train, y_train, epochs=epochs, validation_split=0.2
         )
 
         plot_loss(
@@ -108,6 +138,7 @@ def get_model(
             epochs=epochs,
             learning_rate=learning_rate,
         )
+        model.summary()
         model.save(model_path)
     else:
         return tf.keras.models.load_model(model_path)
@@ -121,40 +152,37 @@ def main(arguments):
     adapt_data = np.array(X_train)
     norm_layer = layers.Normalization()
     norm_layer.adapt(adapt_data)
-
-
+    global normalization_layer
+    normalization_layer = norm_layer
 
     model = get_model(
         X_train=X_train,
         y_train=y_train,
         recalculate=True,
         batch_size=32,
-        epochs=30,
+        epochs=10,
         learning_rate=0.001,
-        norm_layer=norm_layer
     )
 
     x = np.array([list(arguments.__dict__.values())])
     probs = model.predict(x, verbose=0)[0]
     print("predicted class: ", np.argmax(probs) + 1)
 
-    # exit()
-    correct_count = 0
+    y_pred = []
+    y_true = []
 
     for x_test, (_, y) in zip(X_test.itertuples(), y_test.iterrows()):
         x_test_list = list(x_test)
         x_test_list.pop(0)
         test_in = np.array([list(x_test_list)])
         probs = model.predict(test_in, verbose=0)[0]
-        pred_label = np.argmax(probs) + 1
-        actual_label = np.argmax(list(y)) + 1
-        correct = pred_label == actual_label
-        correct_count += 1 if correct else 0
 
-        print(
-            f"probs: {probs}, predicted: {pred_label}, actual class: {actual_label}, correct: {pred_label == actual_label}"
-        )
-    print(f"Accuracy: {correct_count / len(X_test) * 100:.2f} %")
+        y_pred.append(np.argmax(probs))
+        y_true.append(np.argmax(list(y)))
+
+    # confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    print(cm)
 
 
 if __name__ == "__main__":
