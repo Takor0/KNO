@@ -7,12 +7,14 @@ from keras.src.optimizers import Adam
 from keras.src.models import Sequential
 from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix
-
+import keras
 from matplotlib.offsetbox import AnchoredText
 
-BATCH_SIZE = 512
-EPOCHS = 10
 
+
+BATCH_SIZE = 2048
+EPOCHS = 20
+keras.mixed_precision.set_global_policy('mixed_float16')
 
 def plot_loss(history, epochs, learning_rate, name, loc="upper right"):
     metrics_data = history.history
@@ -71,7 +73,7 @@ def get_convolutional_model(hp):
 
     #L1
     hp_conv_1 = hp.Int("conv_1", min_value=32, max_value=256, step=32)
-    hp_filters_1 = hp.Int("filter_size_1", min_value=1, max_value=10, step=1)
+    hp_filters_1 = hp.Choice("filter_size_1", values=[3, 5])
     model.add(
         layers.Conv2D(hp_conv_1, hp_filters_1, padding='same',name="input_conv_1", input_shape=(28, 28, 1),activation="relu"),
     )
@@ -81,7 +83,7 @@ def get_convolutional_model(hp):
 
     #L2
     hp_conv_2 = hp.Int("conv_2", min_value=32, max_value=256, step=32)
-    hp_filters_2 = hp.Int("filter_size_2", min_value=1, max_value=10, step=1)
+    hp_filters_2 = hp.Choice("filter_size_2", values=[3, 5])
     model.add(
         layers.Conv2D(hp_conv_2,hp_filters_2, padding='same',name="hidden_conv_2",activation="relu"),
     )
@@ -91,7 +93,7 @@ def get_convolutional_model(hp):
 
     #L3
     hp_conv_3 = hp.Int("conv_3", min_value=32, max_value=256, step=32)
-    hp_filters_3 = hp.Int("filter_size_3", min_value=1, max_value=10, step=1)
+    hp_filters_3 = hp.Choice("filter_size_3", values=[3, 5])
     model.add(
         layers.Conv2D(hp_conv_3,hp_filters_3, padding='same',name="hidden_conv_3", activation="relu"),
     )
@@ -114,6 +116,7 @@ def get_convolutional_model(hp):
         optimizer=Adam(learning_rate=hp_learning_rate),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
+        jit_compile=True
     )
 
     return model
