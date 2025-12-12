@@ -13,6 +13,9 @@ W obu parametrów zostały dostrojone przy użyciu Keras Tuner.
 - learning rate XXX (tuned)
 - loss Sparse Categorical Crossentropy
 - Accuracy XXX
+### Data augmentation
+Dodanie data augmentation jedynie pogorszyło wyniki modelu Dense,
+dlatego nie zostało zastosowane w ostatecznej wersji.
 ### Macierz pomyłek
 | Act \ Pred | 0 (T-shirt) | 1 (Trouser) | 2 (Pullover) | 3 (Dress) | 4 (Coat) | 5 (Sandal) | 6 (Shirt) | 7 (Sneaker) | 8 (Bag) | 9 (Ankle boot) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -26,29 +29,34 @@ W obu parametrów zostały dostrojone przy użyciu Keras Tuner.
 | **7 (Sneaker)** | 0 | 0 | 0 | 0 | 0 | 18 | 0 | **973** | 0 | 9 |
 | **8 (Bag)** | 6 | 1 | 8 | 7 | 11 | 2 | 10 | 6 | **949** | 0 |
 | **9 (Ankle boot)** | 0 | 0 | 0 | 0 | 0 | 6 | 1 | 57 | 0 | **936** |
-## Sieć w pełni połączona (Dense)
+## Sieć w konwolucyjna (CNN)
 ### Opis architektury
+- Warstwa RandomRotation (aug_rotation) factor 0.0 (tuned)
+- Warstwa RandomZoom (aug_zoom) factor 0.02 (tuned)
+- Warstwa RandomTranslation (aug_translation) height_factor 0.05 (tuned)
 - Warstwa Conv2D (input_conv_1), 192 filtry, kernel_size 5, padding: 'same' aktywacja relu (tuned)
 - Warstwa MaxPooling2D (hidden_pool_1)
-- Warstwa Conv2D (input_conv_2), 224 filtry, kernel_size 5, padding: 'same' aktywacja relu (tuned)
+- Warstwa Conv2D (input_conv_2), 192 filtry, kernel_size 3, padding: 'same' aktywacja relu (tuned)
 - Warstwa MaxPooling2D (hidden_pool_2)
-- Warstwa Conv2D (input_conv_3), 160 filtry, kernel_size 3, padding: 'same' aktywacja relu (tuned)
+- Warstwa Conv2D (input_conv_3), 96 filtry, kernel_size 3, padding: 'same' aktywacja relu (tuned)
 - Warstwa MaxPooling2D (hidden_pool_3)
 - Warstwa Flatten
-- learning rate 0.0001 (tuned)
+- learning rate 0.01 (tuned)
 - loss Sparse Categorical Crossentropy
-- val accuracy 0.8967
-- Max epochs 20, EarlyStopping patience 3, Zatrzymało sie na 14
+- val accuracy 0.8762
+- Max epochs 20, EarlyStopping patience 3, Zatrzymało sie na 8
+### Data augmentation
+Dodanie data augmentation nieznacznie poprawiło wyniki modelu CNN,
 ### Macierz pomyłek
 | Act \ Pred | 0 (T-shirt) | 1 (Trouser) | 2 (Pullover) | 3 (Dress) | 4 (Coat) | 5 (Sandal) | 6 (Shirt) | 7 (Sneaker) | 8 (Bag) | 9 (Ankle boot) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **0 (T-shirt)** | **923** | 0 | 24 | 10 | 3 | 1 | 30 | 0 | 9 | 0 |
-| **1 (Trouser)** | 3 | **977** | 0 | 14 | 3 | 0 | 1 | 0 | 2 | 0 |
-| **2 (Pullover)** | 18 | 0 | **882** | 6 | 63 | 0 | 28 | 0 | 3 | 0 |
-| **3 (Dress)** | 36 | 6 | 23 | **860** | 45 | 0 | 25 | 0 | 5 | 0 |
-| **4 (Coat)** | 3 | 1 | 82 | 19 | **852** | 0 | 40 | 0 | 3 | 0 |
-| **5 (Sandal)** | 0 | 0 | 0 | 1 | 0 | **958** | 0 | 27 | 1 | 13 |
-| **6 (Shirt)** | 211 | 1 | 95 | 17 | 85 | 0 | **579** | 0 | 12 | 0 |
-| **7 (Sneaker)** | 0 | 0 | 0 | 0 | 0 | 6 | 0 | **947** | 0 | 47 |
-| **8 (Bag)** | 4 | 1 | 4 | 1 | 1 | 1 | 0 | 4 | **983** | 1 |
-| **9 (Ankle boot)** | 1 | 0 | 0 | 0 | 0 | 4 | 0 | 19 | 0 | **976** |
+| **0 (T-shirt)** | **620** | 0 | 26 | 55 | 6 | 1 | 279 | 0 | 13 | 0 |
+| **1 (Trouser)** | 0 | **979** | 0 | 13 | 4 | 0 | 3 | 0 | 1 | 0 |
+| **2 (Pullover)** | 7 | 2 | **826** | 11 | 91 | 0 | 62 | 0 | 1 | 0 |
+| **3 (Dress)** | 3 | 11 | 5 | **900** | 37 | 0 | 39 | 0 | 5 | 0 |
+| **4 (Coat)** | 0 | 3 | 79 | 31 | **832** | 0 | 53 | 0 | 2 | 0 |
+| **5 (Sandal)** | 0 | 0 | 0 | 0 | 0 | **984** | 0 | 9 | 1 | 6 |
+| **6 (Shirt)** | 46 | 6 | 76 | 45 | 91 | 4 | **725** | 0 | 7 | 0 |
+| **7 (Sneaker)** | 0 | 0 | 0 | 0 | 0 | 43 | 0 | **930** | 0 | 27 |
+| **8 (Bag)** | 0 | 0 | 6 | 2 | 6 | 7 | 8 | 5 | **966** | 0 |
+| **9 (Ankle boot)** | 0 | 0 | 0 | 0 | 0 | 10 | 1 | 31 | 0 | **958** |

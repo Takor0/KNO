@@ -13,7 +13,7 @@ from matplotlib.offsetbox import AnchoredText
 
 
 BATCH_SIZE = 2048
-EPOCHS = 20
+EPOCHS = 100
 keras.mixed_precision.set_global_policy('mixed_float16')
 
 def plot_loss(history, epochs, learning_rate, name, loc="upper right"):
@@ -71,11 +71,20 @@ def get_conv_model():
 def get_convolutional_model(hp):
     model = Sequential()
 
+    hp_rotation = hp.Float("aug_rotation", min_value=0.0, max_value=0.1, step=0.01)
+    model.add(layers.RandomRotation(factor=hp_rotation, input_shape=(28, 28, 1)))
+
+    hp_zoom = hp.Float("aug_zoom", min_value=0.0, max_value=0.15, step=0.01)
+    model.add(layers.RandomZoom(height_factor=hp_zoom, width_factor=hp_zoom))
+
+    hp_trans = hp.Float("aug_translation", min_value=0.0, max_value=0.1, step=0.01)
+    model.add(layers.RandomTranslation(height_factor=hp_trans, width_factor=hp_trans))
+
     #L1
     hp_conv_1 = hp.Int("conv_1", min_value=32, max_value=256, step=32)
     hp_filters_1 = hp.Choice("filter_size_1", values=[3, 5])
     model.add(
-        layers.Conv2D(hp_conv_1, hp_filters_1, padding='same',name="input_conv_1", input_shape=(28, 28, 1),activation="relu"),
+        layers.Conv2D(hp_conv_1, hp_filters_1, padding='same',name="input_conv_1",activation="relu"),
     )
     model.add(
         layers.MaxPooling2D(name="hidden_pool_1")
