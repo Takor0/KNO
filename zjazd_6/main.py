@@ -42,10 +42,9 @@ def main():
         layers.Reshape((W, H, C))
     ], name="decoder")
 
-    autoencoder_input = layers.Input(shape=(W, H, C))
-    encoded_repr = encoder(autoencoder_input)
+    encoded_repr = encoder(encoder.input)
     decoded_repr = decoder(encoded_repr)
-    autoencoder = Model(autoencoder_input, decoded_repr)
+    autoencoder = Model(encoder.input, decoded_repr)
 
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
