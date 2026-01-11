@@ -50,7 +50,7 @@ def main():
 
     autoencoder.fit(
         mapped_ds,
-        epochs=50
+        epochs=EPOCHS
     )
 
     random_code = np.random.normal(size=(1, ENCODING_DIM))
