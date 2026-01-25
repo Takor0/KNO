@@ -11,7 +11,6 @@ import keras
 from matplotlib.offsetbox import AnchoredText
 
 
-
 BATCH_SIZE = 2048
 EPOCHS = 100
 keras.mixed_precision.set_global_policy('mixed_float16')
@@ -58,14 +57,6 @@ def plot_loss(history, epochs, learning_rate, name, loc="upper right"):
 
         fig.savefig(savepath, dpi=150)
         plt.close(fig)
-
-
-def train_model(X_train, y_train):
-    pass
-
-
-def get_conv_model():
-    pass
 
 
 def get_convolutional_model(hp):
