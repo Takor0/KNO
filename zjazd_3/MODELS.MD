@@ -12,6 +12,8 @@
 - Accuracy: 80%
 ## Opis:
 Bardzo prosta architektura, z jedną wartstwą ukrytą Dense
+## Dataset
+[wine.csv](https://www.kaggle.com/datasets/hrdkcodes/wine-data/data)
 
 # second
 ## Warstwy:
@@ -34,3 +36,5 @@ Bardzo prosta architektura, z jedną wartstwą ukrytą Dense
 Bardziej zaawansowana architektura z wieloma warstwami ukrytymi.
 Dodatkowo dodano dropout, który wyłącza losowo 20% neuronów co zapobiega
 przeuczeniu modelu.
+## Dataset
+[wine.csv](https://www.kaggle.com/datasets/hrdkcodes/wine-data/data)

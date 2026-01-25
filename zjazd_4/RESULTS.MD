@@ -1,4 +1,6 @@
 # Modele
+### Dataset
+[wine.csv](https://www.kaggle.com/datasets/hrdkcodes/wine-data/data)
 ### Ręczna architektura
 - warstwa normalizacyjna
 - Dense 16 unitów, activation relu, kernel_initializer "HeNormal"
